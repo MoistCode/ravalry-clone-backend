@@ -5,7 +5,7 @@ use crate::models;
 
 type DbError = Box<dyn std::error::Error + Send + Sync>;
 
-/// Run query using Dielsel to find the user by uid and return that user.
+/// Run query using Diesel to find the user by uid and return that user.
 pub fn find_user_by_uid (
     uid: Uuid,
     conn: &SqliteConnection,
@@ -18,4 +18,26 @@ pub fn find_user_by_uid (
         .optional()?;
 
     Ok(user)
+}
+
+/// Run query using Diesel to insert a new database row for a new user and
+/// return the result.
+pub fn insert_new_user(
+    // Prevent collision with `name` column imported inside the function.
+    nm: &str,
+    conn: &SqliteConnection,
+) -> Result<models::User, DbError> {
+    // It is common when using Diesel with Actix web to import schema-related
+    // modules inside a function's scope (rather than the normal module's scope)
+    // to prevent import collisions and namespace pollution.
+    use crate::schema::users::dsl::*;
+
+    let new_user = models::User {
+        id: Uuid::new_v4().to_string(),
+        name: nm.to_owned(),
+    };
+
+    diesel::insert_into(users).values(&new_user).execute(conn)?;
+
+    Ok(new_user)
 }
