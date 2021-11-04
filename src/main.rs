@@ -48,12 +48,11 @@ async fn add_user(
     pool: web::Data<DbPool>,
     form: web::Json<models::NewUser>,
 ) -> Result<HttpResponse, Error> {
-    println!("Cowman post");
     // Use web::block to offload blocking Diesel code without blocking the
     // server thread.
     let user = web::block(move || {
         let conn = pool.get()?;
-        actions::insert_new_user(&form.name, &conn)
+        actions::insert_new_user(&form, &conn)
     })
     .await
     .map_err(|e| {
