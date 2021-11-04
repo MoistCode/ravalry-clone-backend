@@ -18,14 +18,13 @@ async fn get_user(
     pool: web::Data<DbPool>,
     user_uid: web::Path<Uuid>,
 ) -> Result<HttpResponse, Error> {
-    println!("Cowman get");
     let user_uid = user_uid.into_inner();
 
     // Use web::block to offload blocking Diesel code without blocking the
     // server thread.
     let user = web::block(move || {
         let conn = pool.get()?;
-        actions::find_user_by_uid(user_uid, &conn)
+        actions::find_userinfo_by_uid(user_uid, &conn)
     })
     .await
     .map_err(|e| {
