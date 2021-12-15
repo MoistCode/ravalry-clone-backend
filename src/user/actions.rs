@@ -3,7 +3,7 @@ use bcrypt::{DEFAULT_COST, hash};
 use diesel::prelude::*;
 use uuid::Uuid;
 
-use crate::models;
+use crate::user::models;
 
 type DbError = Box<dyn std::error::Error + Send + Sync>;
 
@@ -13,7 +13,7 @@ pub fn find_userinfo_by_uid (
     uid: Uuid,
     conn: &SqliteConnection,
 ) -> Result<Option<models::UserInfo>, DbError> {
-    use crate::schema::users::dsl::*;
+    use crate::user::schema::users::dsl::*;
 
     let user = users
         .filter(id.eq(uid.to_string()))
@@ -37,7 +37,7 @@ fn find_user_by_uid (
     uid: Uuid,
     conn: &SqliteConnection,
 ) -> Result<Option<models::User>, DbError> {
-    use crate::schema::users::dsl::*;
+    use crate::user::schema::users::dsl::*;
 
     let user = users
         .filter(id.eq(uid.to_string()))
@@ -57,7 +57,7 @@ pub fn insert_new_user(
     // It is common when using Diesel with Actix web to import schema-related
     // modules inside a function's scope (rather than the normal module's scope)
     // to prevent import collisions and namespace pollution.
-    use crate::schema::users::dsl::*;
+    use crate::user::schema::users::dsl::*;
 
     let hash_pw = hash(form.password.to_owned(), DEFAULT_COST)?;
 

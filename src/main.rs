@@ -1,66 +1,11 @@
 #[macro_use]
 extern crate diesel;
 
-use actix_web::{App, Error, get, HttpResponse, HttpServer, middleware, post, web};
+use actix_web::{App, HttpServer, middleware};
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
-use uuid::Uuid;
 
-mod actions;
-mod models;
-mod schema;
-
-type DbPool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
-
-/// Find user by their UID.
-#[get("/user/{user_id}")]
-async fn get_user(
-    pool: web::Data<DbPool>,
-    user_uid: web::Path<Uuid>,
-) -> Result<HttpResponse, Error> {
-    let user_uid = user_uid.into_inner();
-
-    // Use web::block to offload blocking Diesel code without blocking the
-    // server thread.
-    let user = web::block(move || {
-        let conn = pool.get()?;
-        actions::find_userinfo_by_uid(user_uid, &conn)
-    })
-    .await
-    .map_err(|e| {
-        eprintln!("{}", e);
-        HttpResponse::InternalServerError().finish()
-    })?;
-
-    if let Some(user) = user {
-        Ok(HttpResponse::Ok().json(user))
-    } else {
-        let res = HttpResponse::NotFound()
-            .body(format!("No user found with uid: {}", user_uid));
-        Ok(res)
-    }
-}
-
-/// Inserts a new user with the name defined in the form.
-#[post("/user")]
-async fn add_user(
-    pool: web::Data<DbPool>,
-    form: web::Json<models::NewUser>,
-) -> Result<HttpResponse, Error> {
-    // Use web::block to offload blocking Diesel code without blocking the
-    // server thread.
-    let user = web::block(move || {
-        let conn = pool.get()?;
-        actions::insert_new_user(&form, &conn)
-    })
-    .await
-    .map_err(|e| {
-        eprintln!("{}", e);
-        HttpResponse::InternalServerError().finish()
-    })?;
-
-    Ok(HttpResponse::Ok().json(user))
-}
+pub mod user;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -85,8 +30,10 @@ async fn main() -> std::io::Result<()> {
             // Set up DB pool to be used with web::Data<Pool> extractor
             .data(pool.clone())
             .wrap(middleware::Logger::default())
-            .service(get_user)
-            .service(add_user)
+            // Favorite routes
+            // User routes
+            .service(user::routes::get_user)
+            .service(user::routes::add_user)
     })
     .bind(&bind)?
     .run()
