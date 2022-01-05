@@ -10,4 +10,3 @@
 * Has highlight image and a subset of images
 * Can be favorited
 * Can be tagged with categories
-
