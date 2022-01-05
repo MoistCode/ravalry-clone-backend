@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::user::schema::users;
+use crate::schema::users;
 
 #[derive(Debug, Serialize, Queryable, Insertable)]
 /// User properties for a user in the database. Should not be public facing.

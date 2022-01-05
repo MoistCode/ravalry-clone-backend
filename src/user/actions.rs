@@ -9,11 +9,14 @@ type DbError = Box<dyn std::error::Error + Send + Sync>;
 
 /// Run query using Diesel to find the user by uid and return the public facing
 /// user information.
-pub fn find_userinfo_by_uid (
+pub fn find_user_info_by_uid (
     uid: Uuid,
     conn: &SqliteConnection,
 ) -> Result<Option<models::UserInfo>, DbError> {
-    use crate::user::schema::users::dsl::*;
+    // It is common when using Diesel with Actix web to import schema-related
+    // modules inside a function's scope (rather than the normal module's scope)
+    // to prevent import collisions and namespace pollution.
+    use crate::schema::users::dsl::*;
 
     let user = users
         .filter(id.eq(uid.to_string()))
@@ -31,22 +34,6 @@ pub fn find_userinfo_by_uid (
     Ok(Some(returned_user))
 }
 
-/// Run query using Diesel to find the user by uid and return all information
-/// on the user. Should not be public facing.
-fn find_user_by_uid (
-    uid: Uuid,
-    conn: &SqliteConnection,
-) -> Result<Option<models::User>, DbError> {
-    use crate::user::schema::users::dsl::*;
-
-    let user = users
-        .filter(id.eq(uid.to_string()))
-        .first::<models::User>(conn)
-        .optional()?;
-
-    Ok(user)
-}
-
 /// Run query using Diesel to insert a new database row for a new user and
 /// return the result.
 pub fn insert_new_user(
@@ -57,7 +44,7 @@ pub fn insert_new_user(
     // It is common when using Diesel with Actix web to import schema-related
     // modules inside a function's scope (rather than the normal module's scope)
     // to prevent import collisions and namespace pollution.
-    use crate::user::schema::users::dsl::*;
+    use crate::schema::users::dsl::*;
 
     let hash_pw = hash(form.password.to_owned(), DEFAULT_COST)?;
 
