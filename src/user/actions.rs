@@ -40,7 +40,7 @@ pub fn insert_new_user(
     // Prevent collision with `name` column imported inside the function.
     form: &web::Json<models::NewUser>,
     conn: &SqliteConnection,
-) -> Result<models::UserInfo, DbError> {
+) -> Result<Option<models::UserInfo>, DbError> {
     // It is common when using Diesel with Actix web to import schema-related
     // modules inside a function's scope (rather than the normal module's scope)
     // to prevent import collisions and namespace pollution.
@@ -65,5 +65,5 @@ pub fn insert_new_user(
         username: new_user.username,
     };
 
-    Ok(returned_new_user)
+    Ok(Some(returned_new_user))
 }

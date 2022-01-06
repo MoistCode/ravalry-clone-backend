@@ -5,6 +5,7 @@ use actix_web::{App, HttpServer, middleware};
 use diesel::prelude::*;
 use diesel::r2d2::{Pool, ConnectionManager};
 
+pub mod favorite;
 pub mod pattern;
 pub mod schema;
 pub mod user;
@@ -30,12 +31,15 @@ async fn main() -> std::io::Result<()> {
             .data(pool.clone())
             .wrap(middleware::Logger::default())
             // Favorite routes
+            .service(favorite::routes::add_favorite)
             // Pattern routes
             .service(pattern::routes::get_pattern)
             .service(pattern::routes::add_pattern)
+            .service(pattern::routes::get_pattern_favorited_users)
             // User routes
             .service(user::routes::get_user)
             .service(user::routes::add_user)
+            .service(user::routes::get_user_favorites)
     })
     .bind(&bind)?
     .run()

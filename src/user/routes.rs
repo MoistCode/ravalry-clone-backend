@@ -5,6 +5,7 @@ use uuid::Uuid;
 
 type DbPool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
 
+use crate::favorite;
 use crate::user;
 
 /// Find user by their UID.
@@ -55,4 +56,23 @@ pub async fn add_user(
     })?;
 
     Ok(HttpResponse::Ok().json(user))
+}
+
+/// Gets all user favorites.
+#[get("/user/{user_id}/favorites")]
+pub async fn get_user_favorites(
+    pool: web::Data<DbPool>,
+    user_uid: web::Path<Uuid>,
+) -> Result<HttpResponse, Error> {
+    let favorites = web::block(move || {
+        let conn = pool.get()?;
+        favorite::action::find_favorites_by_user_uid(user_uid.into_inner(), &conn)
+    })
+    .await
+    .map_err(|e| {
+        eprintln!("{}", e);
+        HttpResponse::InternalServerError().finish()
+    })?;
+
+    Ok(HttpResponse::Ok().json(favorites))
 }

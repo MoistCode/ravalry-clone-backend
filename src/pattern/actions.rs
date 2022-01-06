@@ -30,7 +30,7 @@ pub fn find_pattern_info_by_uid(
 pub fn insert_new_pattern(
     form: &web::Json<models::NewPattern>,
     conn: &SqliteConnection
-) -> Result<models::Pattern, DbError> {
+) -> Result<Option<models::Pattern>, DbError> {
     // It is common when using Diesel with Actix web to import schema-related
     // modules inside a function's scope (rather than the normal module's scope)
     // to prevent import collisions and namespace pollution.
@@ -47,5 +47,5 @@ pub fn insert_new_pattern(
 
     diesel::insert_into(patterns).values(&pattern).execute(conn)?;
 
-    Ok(pattern)
+    Ok(Some(pattern))
 }
