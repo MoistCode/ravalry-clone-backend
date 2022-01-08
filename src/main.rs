@@ -46,11 +46,20 @@ async fn main() -> std::io::Result<()> {
     .await
 }
 
-pub fn establish_connection_manager() -> ConnectionManager<SqliteConnection> {
-    dotenv::dotenv().ok();
-
-    let database_url = std::env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set.");
-
+fn establish_connection_manager() -> ConnectionManager<SqliteConnection> {
+    let database_url = get_database_url();
     ConnectionManager::<SqliteConnection>::new(&database_url)
+}
+
+#[cfg(debug_assertions)]
+fn get_database_url() -> std::string::String {
+    println!("Getting dev database URL...");
+    dotenv::dotenv().ok();
+    std::env::var("DATABASE_URL").expect("DATABASE_URL must be set.")
+}
+
+#[cfg(not(debug_assertions))]
+fn get_database_url() -> std::string::String {
+    println!("Getting production database URL...");
+    "production.db".to_string()
 }

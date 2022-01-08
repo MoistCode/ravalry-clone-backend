@@ -1,0 +1,7 @@
+.env_logger
+test.db
+target/
+.git
+.gitignore
+README.md
+.env
