@@ -5,6 +5,7 @@ use crate::schema::patterns;
 #[derive(Debug, Serialize, Queryable, Insertable)]
 pub struct Pattern {
     pub id: String,
+    pub user_id: String,
     pub name: String,
     pub created_at: NaiveDateTime,
 }
@@ -12,4 +13,5 @@ pub struct Pattern {
 #[derive(Serialize, Deserialize)]
 pub struct NewPattern {
     pub name: String,
+    pub user_id: String,
 }

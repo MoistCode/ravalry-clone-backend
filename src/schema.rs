@@ -9,6 +9,7 @@ table! {
 table! {
     patterns (id) {
         id -> Text,
+        user_id -> Text,
         name -> Text,
         created_at -> Timestamp,
     }
@@ -26,6 +27,7 @@ table! {
 
 joinable!(favorites -> patterns (pattern_id));
 joinable!(favorites -> users (user_id));
+joinable!(patterns -> users (user_id));
 
 allow_tables_to_appear_in_same_query!(
     favorites,

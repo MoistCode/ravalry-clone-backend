@@ -31,9 +31,6 @@ pub fn insert_new_pattern(
     form: &web::Json<models::NewPattern>,
     conn: &SqliteConnection
 ) -> Result<Option<models::Pattern>, DbError> {
-    // It is common when using Diesel with Actix web to import schema-related
-    // modules inside a function's scope (rather than the normal module's scope)
-    // to prevent import collisions and namespace pollution.
     use crate::schema::patterns::dsl::*;
 
     let utc = Utc::now();
@@ -41,6 +38,7 @@ pub fn insert_new_pattern(
 
     let pattern = models::Pattern {
         id: Uuid::new_v4().to_string(),
+        user_id: form.user_id.to_owned(),
         name: form.name.to_owned(),
         created_at: NaiveDateTime::from_timestamp(timestamp, 0),
     };
