@@ -31,3 +31,6 @@ https://dev.to/sergeyzenchenko/actix-web-in-docker-how-to-build-small-and-secure
 ## Running SQL queries inside of the container
 1. Ensure container is running.
 2. Run `docker exec -it ravalry-clone sqlite3 test.db` to start a bash shell running inside of the container. Here you can run queries against the database.
+
+## Populating database
+1. Send a GET request to `127.0.0.1:8080/admin/populate`.
