@@ -28,3 +28,6 @@ https://dev.to/sergeyzenchenko/actix-web-in-docker-how-to-build-small-and-secure
 1. Pull from repo (DockerHub) using `docker pull moistcode/ravalry-clone:<IMAGE_VERSION>` (ex. `docker pull moistcode/ravalry-clone:0.0.1`). Can check for the different version/tags by going to https://hub.docker.com/r/moistcode/ravalry-clone/tags.
 1. Run `docker run -e DATABASE_URL=test.db -p 8080:8080 --name <CONTAINER_NAME> moistcode/ravalry-clone:<IMAGE_VERSION>` (ex. `docker run -e DATABASE_URL=test.db -p 8080:8080 --name ravalry-clone ravalry-clone:0.0.1`).
 
+## Running SQL queries inside of the container
+1. Ensure container is running.
+2. Run `docker exec -it ravalry-clone sqlite3 test.db` to start a bash shell running inside of the container. Here you can run queries against the database.
