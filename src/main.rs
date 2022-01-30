@@ -6,10 +6,12 @@ use diesel::prelude::*;
 use diesel::r2d2::{Pool, ConnectionManager};
 
 pub mod admin;
+pub mod constants;
 pub mod favorite;
 pub mod pattern;
 pub mod schema;
 pub mod user;
+pub mod utils;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -22,8 +24,7 @@ async fn main() -> std::io::Result<()> {
         .build(manager)
         .expect("Failed to create database connection pool.");
     
-    let bind = "127.0.0.1:8080";
-    // let bind = "0.0.0.0:8080";
+    let bind = constants::server::get_tunnel_url();
 
     println!("Starting server at: {}", &bind);
 
