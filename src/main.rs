@@ -38,9 +38,10 @@ async fn main() -> std::io::Result<()> {
             // Favorite routes
             .service(favorite::routes::add_favorite)
             // Pattern routes
+            .service(pattern::routes::get_hottest_patterns)
+            .service(pattern::routes::get_pattern_favorited_users)
             .service(pattern::routes::get_pattern)
             .service(pattern::routes::add_pattern)
-            .service(pattern::routes::get_pattern_favorited_users)
             // User routes
             .service(user::routes::get_user)
             .service(user::routes::add_user)

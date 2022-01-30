@@ -1,9 +1,10 @@
-use actix_web::{web};
+use actix_web::web;
 use chrono::{NaiveDateTime, Utc};
 use diesel::prelude::*;
 use uuid::Uuid;
 
 use crate::pattern::models;
+use crate::constants;
 
 type DbError = Box<dyn std::error::Error + Send + Sync>;
 
@@ -40,10 +41,63 @@ pub fn insert_new_pattern(
         id: Uuid::new_v4().to_string(),
         user_id: form.user_id.to_owned(),
         name: form.name.to_owned(),
+        homepage_url: generate_homepage_url(&form.name),
+        highlight_image_url: Some("https://randomuser.me/api/portraits/thumb/men/94.jpg".to_string()),
+        times_visited_in_24_hours: 0,
         created_at: NaiveDateTime::from_timestamp(timestamp, 0),
     };
 
     diesel::insert_into(patterns).values(&pattern).execute(conn)?;
 
     Ok(Some(pattern))
+}
+
+pub fn find_hottest_patterns(conn: &SqliteConnection) -> Result<Option<Vec<models::PatternWithUserInfo>>, DbError> {
+    use crate::schema::patterns::dsl::*;
+    use crate::user::actions::find_user_info_by_uid;
+
+    let hottest_patterns = patterns.select(
+        (
+            id,
+            user_id,
+            name,
+            homepage_url,
+            highlight_image_url,
+            created_at,
+            times_visited_in_24_hours,
+        )
+    )
+    .order_by(times_visited_in_24_hours.desc())
+    .limit(20)
+    .load::<models::Pattern>(conn)?;
+
+    let mut hottest_pattern_with_user = vec![];
+    
+    for hot_pattern in hottest_patterns.iter() {
+        println!("{:?}", &hot_pattern.user_id);
+
+        let user_uid = Uuid::parse_str(&hot_pattern.user_id)?;
+        let user = find_user_info_by_uid(user_uid, &conn)?.unwrap();
+
+        hottest_pattern_with_user.push(models::PatternWithUserInfo {
+            user_first_name: user.first_name,
+            user_last_name: user.last_name,
+            name: hot_pattern.name.to_owned(),
+            homepage_url: hot_pattern.homepage_url.to_owned(),
+            highlight_image_url: hot_pattern.highlight_image_url.to_owned(),
+            times_visited_in_24_hours: hot_pattern.times_visited_in_24_hours,
+        });
+    }
+
+    println!("{:?}", hottest_pattern_with_user);
+
+    Ok(Some(hottest_pattern_with_user))
+}
+
+use crate::utils::sanitize_string;
+
+pub fn generate_homepage_url(name: &str) -> String {
+    let homepage_uid = Uuid::new_v4().to_string();
+    let name_with_dashs = str::replace(&name, " ", "-");
+    format!("{}{}-{}", constants::page::URL, sanitize_string(name_with_dashs), homepage_uid)
 }

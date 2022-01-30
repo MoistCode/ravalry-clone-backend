@@ -1,3 +1,3 @@
-pub mod action;
+pub mod actions;
 pub mod models;
 pub mod routes;

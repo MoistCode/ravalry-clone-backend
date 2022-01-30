@@ -12,7 +12,7 @@ pub async fn populate(
 ) -> Result<HttpResponse, Error> {
     web::block(move || {
         let conn = pool.get()?;
-        admin::action::populate_database(&conn)
+        admin::actions::populate_database(&conn)
     })
     .await
     .map_err(|e| {

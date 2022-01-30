@@ -11,7 +11,10 @@ table! {
         id -> Text,
         user_id -> Text,
         name -> Text,
+        homepage_url -> Text,
+        highlight_image_url -> Nullable<Text>,
         created_at -> Timestamp,
+        times_visited_in_24_hours -> Integer,
     }
 }
 

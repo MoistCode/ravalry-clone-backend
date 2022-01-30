@@ -13,7 +13,7 @@ pub async fn add_favorite(
 ) -> Result<HttpResponse, Error> {
     let favorite = web::block(move || {
         let conn = pool.get()?;
-        favorite::action::insert_new_favorite(&form, &conn)
+        favorite::actions::insert_new_favorite(&form, &conn)
     })
     .await
     .map_err(|e| {

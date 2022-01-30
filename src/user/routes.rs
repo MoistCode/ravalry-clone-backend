@@ -66,7 +66,7 @@ pub async fn get_user_favorites(
 ) -> Result<HttpResponse, Error> {
     let favorites = web::block(move || {
         let conn = pool.get()?;
-        favorite::action::find_favorites_by_user_uid(user_uid.into_inner(), &conn)
+        favorite::actions::find_favorites_by_user_uid(user_uid.into_inner(), &conn)
     })
     .await
     .map_err(|e| {

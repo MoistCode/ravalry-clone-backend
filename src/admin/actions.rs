@@ -1,13 +1,11 @@
-use actix_web::{web};
 use bcrypt::{DEFAULT_COST, hash};
 use diesel::prelude::*;
-use fake::{Dummy, Fake, Faker};
+use fake::Fake;
 use rand::Rng;
 use std::collections::HashSet;
 use uuid::Uuid;
 
 type DbError = Box<dyn std::error::Error + Send + Sync>;
-
 
 /// Populates the database with users.
 fn populate_users(conn: &SqliteConnection) -> Result<Option<Vec<String>>, DbError> {
@@ -65,14 +63,19 @@ fn populate_patterns(
     for n in 1..=num_of_patterns {
         println!("Inserting pattern: {}/{}", n, num_of_patterns);
         let random_index = rng.gen_range(0..user_ids_len);
+        let random_num_of_visits = rng.gen_range(0..500);
         let random_user_id = &user_ids[random_index];
         let pattern_id = Uuid::new_v4().to_string();
+        let title: String = Sentence(EN, 5..11).fake();
 
         let new_pattern = pattern::models::Pattern {
             id: pattern_id.to_owned(),
             user_id: random_user_id.to_string(),
-            name: Sentence(EN, 5..11).fake(),
+            name: title.to_owned(),
             created_at: DateTime(EN).fake(), 
+            homepage_url: pattern::actions::generate_homepage_url(&title),
+            times_visited_in_24_hours: random_num_of_visits,
+            highlight_image_url: Some("https://randomuser.me/api/portraits/thumb/men/94.jpg".to_string()),
         };
 
         diesel::insert_into(patterns).values(&new_pattern).execute(conn)?;

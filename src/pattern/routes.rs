@@ -8,6 +8,41 @@ type DbPool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
 use crate::favorite;
 use crate::pattern;
 
+#[post("/pattern")]
+pub async fn add_pattern(
+    pool: web::Data<DbPool>,
+    form: web::Json<pattern::models::NewPattern>,
+) -> Result<HttpResponse, Error> {
+    let pattern = web::block(move || {
+        let conn = pool.get()?;
+        pattern::actions::insert_new_pattern(&form, &conn)
+    })
+    .await
+    .map_err(|e| {
+        eprintln!("{}", e);
+        HttpResponse::InternalServerError().finish()
+    })?;
+
+    Ok(HttpResponse::Ok().json(pattern))
+}
+
+/// Gets the most visited patterns within the last 24 hours.
+#[get("/pattern/hottest")]
+pub async fn get_hottest_patterns(pool: web::Data<DbPool>) -> Result<HttpResponse, Error> {
+    println!("cowman123");
+
+    let hottest_patterns = web::block(move || {
+        let conn = pool.get()?;
+        pattern::actions::find_hottest_patterns(&conn)
+    })
+    .await
+    .map_err(|e| {
+        eprintln!("{}", e);
+    })?;
+
+    Ok(HttpResponse::Ok().json(hottest_patterns))
+}
+
 #[get("/pattern/{pattern_id}")]
 pub async fn get_pattern (
     pool: web::Data<DbPool>,
@@ -36,24 +71,6 @@ pub async fn get_pattern (
     }
 }
 
-#[post("/pattern")]
-pub async fn add_pattern(
-    pool: web::Data<DbPool>,
-    form: web::Json<pattern::models::NewPattern>,
-) -> Result<HttpResponse, Error> {
-    let pattern = web::block(move || {
-        let conn = pool.get()?;
-        pattern::actions::insert_new_pattern(&form, &conn)
-    })
-    .await
-    .map_err(|e| {
-        eprintln!("{}", e);
-        HttpResponse::InternalServerError().finish()
-    })?;
-
-    Ok(HttpResponse::Ok().json(pattern))
-}
-
 /// Gets all users that favorited this pattern.
 #[get("/pattern/{pattern_id}/favorites")]
 pub async fn get_pattern_favorited_users(
@@ -62,7 +79,7 @@ pub async fn get_pattern_favorited_users(
 ) -> Result<HttpResponse, Error> {
     let favorites = web::block(move || {
         let conn = pool.get()?;
-        favorite::action::find_favorites_by_pattern_uid(pattern_id.into_inner(), &conn)
+        favorite::actions::find_favorites_by_pattern_uid(pattern_id.into_inner(), &conn)
     })
     .await
     .map_err(|e| {
