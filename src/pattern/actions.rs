@@ -74,8 +74,6 @@ pub fn find_hottest_patterns(conn: &SqliteConnection) -> Result<Option<Vec<model
     let mut hottest_pattern_with_user = vec![];
     
     for hot_pattern in hottest_patterns.iter() {
-        println!("{:?}", &hot_pattern.user_id);
-
         let user_uid = Uuid::parse_str(&hot_pattern.user_id)?;
         let user = find_user_info_by_uid(user_uid, &conn)?.unwrap();
 
@@ -89,9 +87,95 @@ pub fn find_hottest_patterns(conn: &SqliteConnection) -> Result<Option<Vec<model
         });
     }
 
-    println!("{:?}", hottest_pattern_with_user);
-
     Ok(Some(hottest_pattern_with_user))
+}
+
+pub fn find_newest_patterns(conn: &SqliteConnection) -> Result<Option<Vec<models::PatternWithUserInfo>>, DbError> {
+    use crate::schema::patterns::dsl::*;
+    use crate::user::actions::find_user_info_by_uid;
+
+    let newest_pattern = patterns.select(
+        (
+            id,
+            user_id,
+            name,
+            homepage_url,
+            highlight_image_url,
+            created_at,
+            times_visited_in_24_hours,
+        )
+    )
+    .order_by(created_at.desc())
+    .limit(4)
+    .load::<models::Pattern>(conn)?;
+
+    let mut newest_pattern_with_user = vec![];
+    
+    for new_pattern in newest_pattern.iter() {
+        let user_uid = Uuid::parse_str(&new_pattern.user_id)?;
+        let user = find_user_info_by_uid(user_uid, &conn)?.unwrap();
+
+        newest_pattern_with_user.push(models::PatternWithUserInfo {
+            user_first_name: user.first_name,
+            user_last_name: user.last_name,
+            name: new_pattern.name.to_owned(),
+            homepage_url: new_pattern.homepage_url.to_owned(),
+            highlight_image_url: new_pattern.highlight_image_url.to_owned(),
+            times_visited_in_24_hours: new_pattern.times_visited_in_24_hours,
+        });
+    }
+
+    Ok(Some(newest_pattern_with_user))
+}
+
+pub fn find_newest_first_patterns(conn: &SqliteConnection) -> Result<Option<Vec<models::PatternWithUserInfo>>, DbError> {
+    // Filter patterns by those from users with only a single post
+    //      Find user of pattern
+    //      Find all patterns by user ID
+    //      Get Count
+    use crate::schema::patterns::dsl::*;
+    use crate::schema::users::dsl::users;
+
+    use crate::user;
+
+    let newest_patterns = patterns.select(
+        (
+            id,
+            user_id,
+            name,
+            homepage_url,
+            highlight_image_url,
+            created_at,
+            times_visited_in_24_hours,
+        )
+    )
+    .order_by(created_at.desc())
+    .load::<models::Pattern>(conn)?;
+
+    let mut newest_first_patterns = vec![];
+
+    for newest_pattern in newest_patterns.iter() {
+        let user_uid = newest_pattern.user_id.to_owned();
+        let user = users.find(user_uid).get_result::<user::models::User>(conn)?;
+        let user_patterns = models::Pattern::belonging_to(&user).load::<models::Pattern>(conn)?;
+        
+        if user_patterns.len() == 1 {
+            newest_first_patterns.push(models::PatternWithUserInfo {
+                user_first_name: user.first_name,
+                user_last_name: user.last_name,
+                name: newest_pattern.name.to_owned(),
+                homepage_url: newest_pattern.homepage_url.to_owned(),
+                highlight_image_url: newest_pattern.highlight_image_url.to_owned(),
+                times_visited_in_24_hours: newest_pattern.times_visited_in_24_hours,
+            });
+        }
+
+        if newest_first_patterns.len() == 3 {
+            break;
+        }
+    }
+
+    Ok(Some(newest_first_patterns))
 }
 
 use crate::utils::sanitize_string;

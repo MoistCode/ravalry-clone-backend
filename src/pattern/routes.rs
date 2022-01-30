@@ -89,3 +89,33 @@ pub async fn get_pattern_favorited_users(
 
     Ok(HttpResponse::Ok().json(favorites))
 }
+
+#[get("/pattern/newest")]
+pub async fn get_newest_patterns(pool: web::Data<DbPool>) -> Result<HttpResponse, Error> {
+    let newest_patterns = web::block(move || {
+        let conn = pool.get()?;
+        pattern::actions::find_newest_patterns(&conn)
+    })
+    .await
+    .map_err(|e| {
+        eprintln!("{}", e);
+    })?;
+
+    Ok(HttpResponse::Ok().json(newest_patterns))
+}
+
+#[get("/pattern/newest-firsts")]
+pub async fn get_newest_first_patterns(pool: web::Data<DbPool>) -> Result<HttpResponse, Error> {
+    let newest_first_patterns = web::block(move || {
+        let conn = pool.get()?;
+        pattern::actions::find_newest_first_patterns(&conn)
+    })
+    .await
+    .map_err(|e| {
+        eprintln!("{}", e);
+    })?;
+
+    Ok(HttpResponse::Ok().json(newest_first_patterns))
+}
+
+

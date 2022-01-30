@@ -1,8 +1,12 @@
+
 use serde::{Deserialize, Serialize};
 use chrono::NaiveDateTime;
-use crate::schema::patterns;
 
-#[derive(Debug, Serialize, Queryable, Insertable)]
+use crate::schema::patterns;
+use crate::user::models::User;
+
+#[derive(Associations, Debug, Identifiable, Serialize, Queryable, Insertable)]
+#[belongs_to(User)]
 pub struct Pattern {
     pub id: String,
     pub user_id: String,
