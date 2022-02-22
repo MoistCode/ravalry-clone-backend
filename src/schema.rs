@@ -15,6 +15,7 @@ table! {
         highlight_image_url -> Nullable<Text>,
         created_at -> Timestamp,
         times_visited_in_24_hours -> Integer,
+        num_favorites -> Integer,
     }
 }
 

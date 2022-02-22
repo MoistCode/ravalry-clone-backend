@@ -3,8 +3,8 @@ use chrono::{NaiveDateTime, Utc};
 use diesel::prelude::*;
 use uuid::Uuid;
 
-use crate::pattern::models;
 use crate::constants;
+use crate::pattern::models;
 
 type DbError = Box<dyn std::error::Error + Send + Sync>;
 
@@ -14,9 +14,6 @@ pub fn find_pattern_info_by_uid(
     uid: Uuid,
     conn: &SqliteConnection,
 ) -> Result<Option<models::Pattern>, DbError> {
-    // It is common when using Diesel with Actix web to import schema-related
-    // modules inside a function's scope (rather than the normal module's scope)
-    // to prevent import collisions and namespace pollution.
     use crate::schema::patterns::dsl::*;
 
     let pattern = patterns
@@ -44,6 +41,7 @@ pub fn insert_new_pattern(
         homepage_url: generate_homepage_url(&form.name),
         highlight_image_url: Some("https://randomuser.me/api/portraits/thumb/men/94.jpg".to_string()),
         times_visited_in_24_hours: 0,
+        num_favorites: 0,
         created_at: NaiveDateTime::from_timestamp(timestamp, 0),
     };
 
@@ -64,6 +62,7 @@ pub fn find_hottest_patterns(conn: &SqliteConnection) -> Result<Option<Vec<model
             homepage_url,
             highlight_image_url,
             created_at,
+            num_favorites,
             times_visited_in_24_hours,
         )
     )
@@ -83,6 +82,7 @@ pub fn find_hottest_patterns(conn: &SqliteConnection) -> Result<Option<Vec<model
             name: hot_pattern.name.to_owned(),
             homepage_url: hot_pattern.homepage_url.to_owned(),
             highlight_image_url: hot_pattern.highlight_image_url.to_owned(),
+            num_favorites: hot_pattern.num_favorites.to_owned(),
             times_visited_in_24_hours: hot_pattern.times_visited_in_24_hours,
         });
     }
@@ -102,6 +102,7 @@ pub fn find_newest_patterns(conn: &SqliteConnection) -> Result<Option<Vec<models
             homepage_url,
             highlight_image_url,
             created_at,
+            num_favorites,
             times_visited_in_24_hours,
         )
     )
@@ -121,6 +122,7 @@ pub fn find_newest_patterns(conn: &SqliteConnection) -> Result<Option<Vec<models
             name: new_pattern.name.to_owned(),
             homepage_url: new_pattern.homepage_url.to_owned(),
             highlight_image_url: new_pattern.highlight_image_url.to_owned(),
+            num_favorites: new_pattern.num_favorites.to_owned(),
             times_visited_in_24_hours: new_pattern.times_visited_in_24_hours,
         });
     }
@@ -146,6 +148,7 @@ pub fn find_newest_first_patterns(conn: &SqliteConnection) -> Result<Option<Vec<
             homepage_url,
             highlight_image_url,
             created_at,
+            num_favorites,
             times_visited_in_24_hours,
         )
     )
@@ -166,6 +169,7 @@ pub fn find_newest_first_patterns(conn: &SqliteConnection) -> Result<Option<Vec<
                 name: newest_pattern.name.to_owned(),
                 homepage_url: newest_pattern.homepage_url.to_owned(),
                 highlight_image_url: newest_pattern.highlight_image_url.to_owned(),
+                num_favorites: newest_pattern.num_favorites.to_owned(),
                 times_visited_in_24_hours: newest_pattern.times_visited_in_24_hours,
             });
         }
@@ -176,6 +180,33 @@ pub fn find_newest_first_patterns(conn: &SqliteConnection) -> Result<Option<Vec<
     }
 
     Ok(Some(newest_first_patterns))
+}
+
+pub fn get_favorite_count(uid: Uuid, conn: &SqliteConnection) -> Result<i32, DbError> {
+    use crate::schema::favorites::dsl::*;
+
+    use crate::favorite;
+
+    let favorites_count = favorites
+        .filter(pattern_id.eq(uid.to_string()))
+        .load::<favorite::models::Favorite>(conn)
+        .unwrap()
+        .len();
+
+
+    Ok(favorites_count as i32)
+}
+
+pub fn update_pattern_favorite_count(uid: Uuid, conn: &SqliteConnection) -> Result<(), DbError> {
+    use crate::schema::patterns::dsl::*;
+
+    let favorites_count = get_favorite_count(uid, conn)?;
+
+    diesel::update(patterns.filter(id.eq(uid.to_string())))
+        .set(num_favorites.eq(favorites_count))
+        .execute(conn)?;
+
+    Ok(())
 }
 
 use crate::utils::sanitize_string;

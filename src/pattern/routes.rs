@@ -29,8 +29,6 @@ pub async fn add_pattern(
 /// Gets the most visited patterns within the last 24 hours.
 #[get("/pattern/hottest")]
 pub async fn get_hottest_patterns(pool: web::Data<DbPool>) -> Result<HttpResponse, Error> {
-    println!("cowman123");
-
     let hottest_patterns = web::block(move || {
         let conn = pool.get()?;
         pattern::actions::find_hottest_patterns(&conn)

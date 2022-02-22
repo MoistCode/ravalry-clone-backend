@@ -16,7 +16,7 @@ fn populate_users(conn: &SqliteConnection) -> Result<Option<Vec<String>>, DbErro
     use crate::user;
     use crate::schema::users::dsl::*;
 
-    let num_of_users = 50;
+    let num_of_users = 20;
     let mut user_ids = vec![];
 
     for n in 1..=num_of_users {
@@ -46,7 +46,7 @@ fn populate_users(conn: &SqliteConnection) -> Result<Option<Vec<String>>, DbErro
 fn populate_patterns(
     conn: &SqliteConnection,
     user_ids: &Vec<String>
-) -> Result<Option<Vec<String>>, DbError> {
+) -> Result<Option<Vec<Uuid>>, DbError> {
     use fake::faker::lorem::raw::*;
     use fake::faker::chrono::raw::*;
     use fake::locales::*;
@@ -56,7 +56,7 @@ fn populate_patterns(
     use crate::schema::patterns::dsl::*;
 
     let mut rng = rand::thread_rng();
-    let num_of_patterns = 150;
+    let num_of_patterns = 50;
     let mut pattern_ids = vec![];
     let user_ids_len = user_ids.len();
 
@@ -65,16 +65,17 @@ fn populate_patterns(
         let random_index = rng.gen_range(0..user_ids_len);
         let random_num_of_visits = rng.gen_range(0..500);
         let random_user_id = &user_ids[random_index];
-        let pattern_id = Uuid::new_v4().to_string();
+        let pattern_id = Uuid::new_v4();
         let title: String = Sentence(EN, 5..11).fake();
 
         let new_pattern = pattern::models::Pattern {
-            id: pattern_id.to_owned(),
+            id: pattern_id.to_string().to_owned(),
             user_id: random_user_id.to_string(),
             name: title.to_owned(),
             created_at: DateTime(EN).fake(), 
             homepage_url: pattern::actions::generate_homepage_url(&title),
             times_visited_in_24_hours: random_num_of_visits,
+            num_favorites: 0,
             highlight_image_url: Some("https://randomuser.me/api/portraits/thumb/men/94.jpg".to_string()),
         };
 
@@ -92,9 +93,10 @@ fn populate_patterns(
 fn populate_favorites(
     conn: &SqliteConnection,
     user_ids: &Vec<String>,
-    pattern_ids: &Vec<String>
+    pattern_ids: &Vec<Uuid>
 ) -> Result<(), DbError> {
     use crate::favorite;
+    use crate::pattern;
     use crate::schema::favorites::dsl::*;
 
     let mut memoized_favorite = HashSet::new();
@@ -104,14 +106,17 @@ fn populate_favorites(
     for n in 1..=num_of_favorites {
         println!("Inserting favorite: {}/{}", n, num_of_favorites);
         let mut random_user_id = user_ids[rng.gen_range(0..user_ids.len())].to_owned();
-        let mut random_pattern_id = pattern_ids[rng.gen_range(0..pattern_ids.len())].to_owned();
+        let random_pattern_id = pattern_ids[rng.gen_range(0..pattern_ids.len())].to_owned();
         let mut memoized_key = random_user_id.to_owned();
-        memoized_key.push_str(&random_pattern_id);
+
+        let mut random_pattern_id = random_pattern_id.to_string();
+
+        memoized_key.push_str(&random_pattern_id.to_string());
 
         loop {
             if memoized_favorite.contains(&memoized_key) {
                 random_user_id = user_ids[rng.gen_range(0..user_ids.len())].to_owned();
-                random_pattern_id = pattern_ids[rng.gen_range(0..pattern_ids.len())].to_owned();
+                random_pattern_id = pattern_ids[rng.gen_range(0..pattern_ids.len())].to_string().to_owned();
                 memoized_key = random_user_id.to_owned();
                 memoized_key.push_str(&random_pattern_id);
                 continue;
@@ -122,14 +127,18 @@ fn populate_favorites(
 
         let new_favorite = favorite::models::Favorite {
             id: Uuid::new_v4().to_string(),
-            pattern_id: random_pattern_id.to_owned(),
+            pattern_id: random_pattern_id.clone(),
             user_id: random_user_id.to_owned(),
         };
-
+        
         diesel::insert_into(favorites).values(&new_favorite).execute(conn)?;
-
+        
         memoized_favorite.insert(memoized_key);
         println!("Completed favorite: {}/{}", n, num_of_favorites);
+    }
+
+    for pid in pattern_ids {
+        pattern::actions::update_pattern_favorite_count(pid.clone(), conn)?;
     }
 
     Ok(())

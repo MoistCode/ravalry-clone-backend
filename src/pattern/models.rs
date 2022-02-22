@@ -14,6 +14,7 @@ pub struct Pattern {
     pub homepage_url: String,
     pub highlight_image_url: Option<String>,
     pub created_at: NaiveDateTime,
+    pub num_favorites: i32,
     pub times_visited_in_24_hours: i32,
 }
 
@@ -24,6 +25,7 @@ pub struct PatternWithUserInfo {
     pub name: String,
     pub homepage_url: String,
     pub highlight_image_url: Option<String>,
+    pub num_favorites: i32,
     pub times_visited_in_24_hours: i32,
 }
 

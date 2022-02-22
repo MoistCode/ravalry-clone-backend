@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS patterns (
     highlight_image_url TEXT,
     created_at DATETIME NOT NULL,
     times_visited_in_24_hours INTEGER NOT NULL,
+    num_favorites INTEGER NOT NULL,
     FOREIGN KEY(user_id) REFERENCES users(id)
 );
 
