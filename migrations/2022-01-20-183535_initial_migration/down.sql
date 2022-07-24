@@ -1,3 +1,0 @@
-DROP TABLE IF EXISTS favorites;
-DROP TABLE IF EXISTS patterns;
-DROP TABLE IF EXISTS users;
