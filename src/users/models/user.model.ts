@@ -21,4 +21,4 @@ export class User {
   @Field()
   @Length(5, 255)
   username: string;
-};
+}

@@ -15,8 +15,8 @@ specifiers:
   '@types/jest': 27.4.0
   '@types/node': ^16.0.0
   '@types/supertest': ^2.0.11
-  '@typescript-eslint/eslint-plugin': ^5.0.0
-  '@typescript-eslint/parser': ^5.0.0
+  '@typescript-eslint/eslint-plugin': ^5.30.7
+  '@typescript-eslint/parser': ^5.30.7
   apollo-server-express: ^3.10.0
   class-transformer: ^0.5.1
   class-validator: ^0.13.2
@@ -37,7 +37,7 @@ specifiers:
   ts-node: ^10.0.0
   tsconfig-paths: ^3.10.1
   typeorm: ^0.3.7
-  typescript: ^4.3.5
+  typescript: ^4.7.4
 
 dependencies:
   '@nestjs/apollo': 10.0.19_vrcxsxcmh567id4ork53buvjpe
