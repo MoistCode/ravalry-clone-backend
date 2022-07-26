@@ -23,13 +23,19 @@ export class UsersService {
     return this.usersRepository.findOneBy({ id });
   }
 
+  /**
+   * Creates a new user provided that the username and email does not exist in
+   * the database.
+   */
   createNewUser(newUserData: CreateUserInput): Promise<UserEntity> {
+    const { email, firstName, lastName, password, username } = newUserData;
+
     const newUserEntity = this.usersRepository.create({
-      email: newUserData.email,
-      firstName: newUserData.firstName,
-      lastName: newUserData.lastName,
-      salt: newUserData.password,
-      username: newUserData.username,
+      email,
+      firstName,
+      lastName,
+      salt: password,
+      username,
     });
 
     return this.usersRepository.save(newUserEntity);

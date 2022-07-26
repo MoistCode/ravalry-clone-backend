@@ -2,10 +2,13 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  PrimaryGeneratedColumn
+  PrimaryGeneratedColumn,
+  Unique,
 } from 'typeorm';
 
 @Entity()
+@Unique(['email'])
+@Unique(['username'])
 export class UserEntity {
   @PrimaryGeneratedColumn()
   id: number;

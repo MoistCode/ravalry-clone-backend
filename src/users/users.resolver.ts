@@ -54,6 +54,18 @@ export class UsersResolver {
 
   @Mutation(returns => User)
   async createNewUser(@Args('newUserData') newUserData: CreateNewUserInput) {
-    return this.usersService.createNewUser(newUserData);
+    try {
+      return await this.usersService.createNewUser(newUserData);
+    } catch (e: any) {
+      switch(e.name) {
+        case 'QueryFailedError': {
+          throw new Error('User already exists.');
+        }
+
+        default: {
+          throw new Error('Something went wrong when trying to create a new user.');
+        }
+      }
+    }
   }
 }
