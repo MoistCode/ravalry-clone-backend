@@ -1,11 +1,14 @@
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
 import { DataSource } from 'typeorm';
 
+import { AuthModule } from './auth/auth.module';
+import { AuthService } from './auth/auth.service';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -35,8 +38,11 @@ import { UsersModule } from './users/users.module';
       }
     }),
 
+    AuthModule,
     UsersModule
   ],
+
+  providers: [AuthService, JwtService],
 })
 
 export class AppModule {
