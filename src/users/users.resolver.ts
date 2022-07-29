@@ -5,7 +5,7 @@ import {
   Int,
   Mutation,
   Query,
-  Resolver
+  Resolver,
 } from '@nestjs/graphql';
 import { IsEmail, Length } from 'class-validator';
 

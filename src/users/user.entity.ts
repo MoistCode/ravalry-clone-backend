@@ -26,7 +26,7 @@ export class UserEntity {
   lastName: string;
 
   @Column()
-  salt: string;
+  hash: string;
 
   @Column()
   username: string;
