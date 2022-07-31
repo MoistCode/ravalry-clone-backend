@@ -5,7 +5,6 @@ import {
   Mutation,
   Resolver,
 } from '@nestjs/graphql';
-import { Length } from 'class-validator';
 
 import { AuthService } from './auth.service';
 import { LoginResponse } from './dto/login-response.dto';
