@@ -9,7 +9,7 @@ import {
 } from '@nestjs/graphql';
 import { IsEmail, Length } from 'class-validator';
 
-import { User } from './models/user.model';
+import { UserModel } from './models/user.model';
 import { UsersService } from './users.service';
 
 @InputType()
@@ -42,7 +42,7 @@ export class UsersResolver {
   ) {}
 
   @Query(
-    returns => User,
+    returns => UserModel,
     {
       name: 'user',
       nullable: true,
@@ -52,7 +52,7 @@ export class UsersResolver {
     return this.usersService.findOneById(id);
   }
 
-  @Mutation(returns => User)
+  @Mutation(returns => UserModel)
   async createNewUser(@Args('newUserData') newUserData: CreateNewUserInput) {
     try {
       return await this.usersService.createNewUser(newUserData);

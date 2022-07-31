@@ -2,7 +2,7 @@ import { Int, Field, ObjectType } from '@nestjs/graphql';
 import { IsEmail, Length } from 'class-validator';
 
 @ObjectType()
-export class User {
+export class UserModel {
   @Field(type => Int)
   id: number;
 

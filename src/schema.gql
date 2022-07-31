@@ -12,7 +12,7 @@ input CreateNewUserInput {
 
 type LoginResponse {
   access_token: String!
-  user: User!
+  user: UserModel!
 }
 
 input LoginUserInput {
@@ -21,15 +21,15 @@ input LoginUserInput {
 }
 
 type Mutation {
-  createNewUser(newUserData: CreateNewUserInput!): User!
+  createNewUser(newUserData: CreateNewUserInput!): UserModel!
   login(loginUserInput: LoginUserInput!): LoginResponse!
 }
 
 type Query {
-  user(id: Int!): User
+  user(id: Int!): UserModel
 }
 
-type User {
+type UserModel {
   email: String!
   firstName: String!
   id: Int!
