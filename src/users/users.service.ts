@@ -28,10 +28,14 @@ export class UsersService {
     return this.usersRepository.findOneBy({ username });
   }
 
-  /**
-   * Creates a new user provided that the username and email does not exist in
-   * the database.
-   */
+  findOneByUsernameWithHash(username: string) {
+    return this.usersRepository
+      .createQueryBuilder('user')
+      .where('user.username = :username', { username })
+      .addSelect('user.hash')
+      .getOneOrFail();
+  }
+
   async createNewUser(newUserData: CreateUserInput) {
     const { email, firstName, lastName, password, username } = newUserData;
 

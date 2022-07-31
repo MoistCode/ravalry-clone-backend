@@ -25,7 +25,7 @@ export class UserEntity {
   @Column()
   lastName: string;
 
-  @Column()
+  @Column({ select: false })
   hash: string;
 
   @Column()
