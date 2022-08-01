@@ -1,39 +1,14 @@
 import {
   Args,
-  Field,
-  InputType,
   Int,
   Mutation,
   Query,
   Resolver,
 } from '@nestjs/graphql';
-import { IsEmail, Length } from 'class-validator';
 
+import { CreateUserInput } from './dto/create-user.input';
 import { UserModel } from './models/user.model';
 import { UsersService } from './users.service';
-
-@InputType()
-export class CreateNewUserInput {
-  @Field()
-  @IsEmail()
-  email: string;
-
-  @Field()
-  @Length(1, 255)
-  firstName: string;
-
-  @Field()
-  @Length(1, 255)
-  lastName: string;
-
-  @Field()
-  @Length(8, 255)
-  password: string;
-
-  @Field()
-  @Length(5, 255)
-  username: string;
-}
 
 @Resolver()
 export class UsersResolver {
@@ -53,7 +28,7 @@ export class UsersResolver {
   }
 
   @Mutation(returns => UserModel)
-  async createNewUser(@Args('newUserData') newUserData: CreateNewUserInput) {
+  async createNewUser(@Args('newUserData') newUserData: CreateUserInput) {
     try {
       return await this.usersService.createNewUser(newUserData);
     } catch (e: any) {
